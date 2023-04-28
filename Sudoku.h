@@ -1,9 +1,18 @@
 #include <iostream>
 #include <stdlib.h>
 #include <iomanip>
-#include <vector>
+#include <string>
+#include <cstdlib>
+#include "Phrases.h"
+
 using namespace std;
+
 const int N = 9, B = 3;
+
+#define MAGENTA_COLOR "\033[35m"
+#define RESET_COLOR "\033[0m"
+#define RED_COLOR "\033[31m"
+#define Wid "\033[82G";
 
 struct Cell{
     int val;
@@ -21,6 +30,7 @@ struct Cell{
 class Sudoku {
     private:
         Cell grid[N][N];
+        Cell gridOriginal[N][N];
     public:
 
         int randomNum(){
@@ -130,9 +140,30 @@ class Sudoku {
             }
         }
 
+        void copyGird(){
+            for(int i = 0; i < N; i++){
+                for(int j = 0; j < N; j++){
+                    gridOriginal[i][j].val = grid[i][j].val;
+                }
+            }
+        }
+
+        void clear(){
+            for(int i = 0; i < N; i++){
+                for(int j = 0; j < N; j++){
+                    grid[i][j] = Cell();
+                }
+            }
+        }
+
         void generateGrid (int level){
+            clear();
+
             fillDiagonalBoxes();
             fillRemaining(0, B);
+
+            copyGird();
+
             switch (level)
             {
             case 1:
@@ -149,33 +180,71 @@ class Sudoku {
             }
         }
 
-        void print(){
-            cout << "╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗" << endl;
+        void print(Cell board[N][N]){
+            // clear();
+            // system("clear");
+            // cout << "\n\n\n\033[8;60;200t";
+            // // cout << "some workd\nsdsdfsdfsf\n";
+            // cout << setw(70) << left << "Left \nContent";
+
+            cout << "\033[3;82H";
+            // cout << "\n\n\n" << Wid;
+            cout << "╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗" << endl; // 37 - length
             for(int i = 0; i < N; i++){
+                cout << Wid;
                 for(int j = 0; j < N; j++){
-                    // cout << grid[i][j].val << ' ';
-                    if(grid[i][j].val != 0){
-                        if(j == 0 || j == 3 || j == 6) printf("║ %i ", grid[i][j].val);
-                        else printf("│ %i ", grid[i][j].val);
+                    if(board[i][j].val != 0){
+                        
+                        if(j == 0 || j == 3 || j == 6) cout << "║ " << RED_COLOR << board[i][j].val << RESET_COLOR << " ";
+                        else cout << "│ " << RED_COLOR << board[i][j].val << RESET_COLOR << " ";
                     }
                     else {
-                        if(j == 0 || j == 3 || j == 6) printf("║   ");
-                        else printf("│   ");
+                        if(j == 0 || j == 3 || j == 6) cout << "║   ";
+                        else cout << "│   ";
                     }
                 }
                 cout << "║\n";
-                
-                if(i != 8) cout << "╟───┼───┼───╫───┼───┼───╫───┼───┼───╢" << endl;
+
+                cout << Wid;
+                if(i == 2 || i == 5) cout <<  "╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣" << endl;
+                else if(i != 8) cout << "╟───┼───┼───╫───┼───┼───╫───┼───┼───╢" << endl;
             }
             cout << "╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝" << endl;
         }
+
+        void printGrid(){
+            display(grid);
+        }
+        void printGridOriginal(){
+            display(gridOriginal);
+        }
+
+        void printLeftSide(){
+            cout << "\033[15G";
+            cout << MORE << '\n';
+            cout << "\n\n\n";
+            cout << "\033[23G";
+            cout << FUN;
+        }
+
+        void printRightSide(){
+            cout << "\033[4;125H";
+            cout << "\033[125G";
+            cout << YEAH << "\n\n";
+            cout << "\033[135G";
+            cout << ACCOUNT << "\n\n\n\n\n";
+        }
+
+        void display(Cell board[N][N]){
+            system("clear");
+            cout << "\n\n\n\033[8;60;200t";
+            // cout << setw(70) << left;
+
+            printLeftSide();
+            print(board);
+            printRightSide();
+        }
+    
+    ~Sudoku(){
+    }
 };
-
-int main(){
-
-    Sudoku game;
-    game.generateGrid(1);
-    game.print();
-
-    return 0;
-}
