@@ -8,7 +8,7 @@ const int N = 9, B = 3;
 struct Cell{
     int val;
     bool fixed;
-    Cell() : val(0), fixed(false) {
+    Cell() : val(0), fixed(true) {
 
     }
 
@@ -120,18 +120,54 @@ class Sudoku {
             return false;
         }
 
+        void removeK(int k){
+            for(int i = 0; i < k; i++){
+                int ind = (int) rand() % (N * N);
+                int row = ind / N, col = ind % N;
+
+                if(grid[row][col].fixed == false) i--;
+                else grid[row][col].update(0), grid[row][col].fixed = false;
+            }
+        }
+
         void generateGrid (int level){
             fillDiagonalBoxes();
             fillRemaining(0, B);
+            switch (level)
+            {
+            case 1:
+                removeK(55);
+                break;
+            case 2:
+                removeK(60);
+                break;
+            case 3:
+                removeK(65);
+                break;
+            default:
+                break;
+            }
         }
 
         void print(){
+            cout << "╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗" << endl;
             for(int i = 0; i < N; i++){
                 for(int j = 0; j < N; j++){
-                    cout << grid[i][j].val << ' ';
+                    // cout << grid[i][j].val << ' ';
+                    if(grid[i][j].val != 0){
+                        if(j == 0 || j == 3 || j == 6) printf("║ %i ", grid[i][j].val);
+                        else printf("│ %i ", grid[i][j].val);
+                    }
+                    else {
+                        if(j == 0 || j == 3 || j == 6) printf("║   ");
+                        else printf("│   ");
+                    }
                 }
-                cout << '\n';
+                cout << "║\n";
+                
+                if(i != 8) cout << "╟───┼───┼───╫───┼───┼───╫───┼───┼───╢" << endl;
             }
+            cout << "╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝" << endl;
         }
 };
 
