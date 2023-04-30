@@ -418,10 +418,6 @@ class Sudoku {
             case '\n':
                 if(btnSwitch == 0) startAgain();
                 else if(btnSwitch == 1) endGameShowingSolutions();
-            case 'q' | 'Q':
-                endwin();
-                system("clear");
-                exit(0);
 
             default:
                 break;
@@ -429,6 +425,11 @@ class Sudoku {
 
             if('0' <= key && key <= '9') enterNumber(key);
             else if(key == 127) delNumber();
+            else if(key == 'q' || key == 'Q'){
+                endwin();
+                system("clear");
+                exit(0);
+            }
             
         }
 

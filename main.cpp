@@ -111,7 +111,7 @@ void playNext(){
         printTime(elapsed_time);
 
 
-        ofstream outfile("records.txt");
+        ofstream outfile("records.txt", fstream::in | fstream::out | fstream::app);
         outfile << game.getLevel() << ' ' << elapsed_time << '\n';
     }
 
