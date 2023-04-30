@@ -4,6 +4,9 @@
 #include <string>
 #include <cstdlib>
 #include "Phrases.h"
+#include <ncurses.h>
+#include <vector>
+#include <time.h>
 
 using namespace std;
 
@@ -12,7 +15,32 @@ const int N = 9, B = 3;
 #define MAGENTA_COLOR "\033[35m"
 #define RESET_COLOR "\033[0m"
 #define RED_COLOR "\033[31m"
+#define GREEN_COLOR "\033[32m"
+#define YELLOW_COLOR "\033[33m"
+#define BLUE_COLOR "\033[34m"
+#define CYAN_COLOR "\033[36m"
+#define WHITE_COLOR "\033[37m"
+
+#define BACK_WHITE "\033[47m"
+#define BACK_BLACK "\033[40m"
+
 #define Wid "\033[82G";
+
+void printTime(int seconds){
+    int hours = seconds / 3600;
+    int minutes = (seconds % 3600) / 60;
+    seconds %= 60;
+
+    cout << "The Time: " << hours/10 << hours%10 << ":" << minutes/10 << minutes%10 << ":" << seconds/10 << seconds%10 << "\n\n\n";
+}
+
+void printTopTime(int seconds){
+    int hours = seconds / 3600;
+    int minutes = (seconds % 3600) / 60;
+    seconds %= 60;
+
+    cout << hours/10 << hours%10 << ":" << minutes/10 << minutes%10 << ":" << seconds/10 << seconds%10 << "\n\n\n";
+}
 
 struct Cell{
     int val;
@@ -31,7 +59,19 @@ class Sudoku {
     private:
         Cell grid[N][N];
         Cell gridOriginal[N][N];
+        int level;
+        int cRow, cCol;
+        int btnSwitch;
+        bool *gameOver, *gameWon;
+        int correctSum;
+        vector <int> bestRecords;
+        time_t startTimeS;
     public:
+
+        Sudoku(bool &gameOver, bool &gameWon){
+            this->gameOver = &gameOver;
+            this->gameWon = &gameWon;
+        }
 
         int randomNum(){
             return (int) rand() % N + 1;
@@ -148,7 +188,7 @@ class Sudoku {
             }
         }
 
-        void clear(){
+        void clearGame(){
             for(int i = 0; i < N; i++){
                 for(int j = 0; j < N; j++){
                     grid[i][j] = Cell();
@@ -157,7 +197,7 @@ class Sudoku {
         }
 
         void generateGrid (int level){
-            clear();
+            clearGame();
 
             fillDiagonalBoxes();
             fillRemaining(0, B);
@@ -166,6 +206,9 @@ class Sudoku {
 
             switch (level)
             {
+            case 0:
+                removeK(1); // devOption
+                break;
             case 1:
                 removeK(55);
                 break;
@@ -181,11 +224,6 @@ class Sudoku {
         }
 
         void print(Cell board[N][N]){
-            // clear();
-            // system("clear");
-            // cout << "\n\n\n\033[8;60;200t";
-            // // cout << "some workd\nsdsdfsdfsf\n";
-            // cout << setw(70) << left << "Left \nContent";
 
             cout << "\033[3;82H";
             // cout << "\n\n\n" << Wid;
@@ -193,14 +231,24 @@ class Sudoku {
             for(int i = 0; i < N; i++){
                 cout << Wid;
                 for(int j = 0; j < N; j++){
+
+                    string backgroundColor, textColor;
+                    if(i == cRow && j == cCol) backgroundColor = BACK_WHITE;
+                    else RESET_COLOR;
+
+                    if(btnSwitch != -1) backgroundColor = BACK_BLACK;
+
+                    if(grid[i][j].fixed) textColor = RED_COLOR;
+                    else textColor = RESET_COLOR;
+
                     if(board[i][j].val != 0){
-                        
-                        if(j == 0 || j == 3 || j == 6) cout << "║ " << RED_COLOR << board[i][j].val << RESET_COLOR << " ";
-                        else cout << "│ " << RED_COLOR << board[i][j].val << RESET_COLOR << " ";
+
+                        if(j == 0 || j == 3 || j == 6) cout << "║" << textColor << backgroundColor << ' ' << board[i][j].val << " " << RESET_COLOR;
+                        else cout << "│" << textColor << backgroundColor << ' ' << board[i][j].val << " " << RESET_COLOR;
                     }
                     else {
-                        if(j == 0 || j == 3 || j == 6) cout << "║   ";
-                        else cout << "│   ";
+                        if(j == 0 || j == 3 || j == 6) cout << "║" << backgroundColor << "   " << RESET_COLOR;
+                        else cout << "│" << backgroundColor << "   " << RESET_COLOR;
                     }
                 }
                 cout << "║\n";
@@ -212,37 +260,204 @@ class Sudoku {
             cout << "╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝" << endl;
         }
 
-        void printGrid(){
-            display(grid);
-        }
-        void printGridOriginal(){
-            display(gridOriginal);
-        }
-
         void printLeftSide(){
+            cout << "\033[4;15H";
             cout << "\033[15G";
+            cout << BLUE_COLOR;
             cout << MORE << '\n';
             cout << "\n\n\n";
             cout << "\033[23G";
+            cout << YELLOW_COLOR;
             cout << FUN;
+            cout << RESET_COLOR;
         }
 
         void printRightSide(){
             cout << "\033[4;125H";
             cout << "\033[125G";
+            cout << YELLOW_COLOR;
             cout << YEAH << "\n\n";
             cout << "\033[135G";
-            cout << ACCOUNT << "\n\n\n\n\n";
+            cout << GREEN_COLOR;
+            cout << ACCOUNT << "\n\n\n";
+            cout << RESET_COLOR;
         }
 
-        void display(Cell board[N][N]){
+        void printButtons(){
+            string backColorAgain = (btnSwitch == 0) ? BACK_WHITE : RESET_COLOR;
+            string backColorSolution = (btnSwitch == 1) ? BACK_WHITE : RESET_COLOR;
+
+            cout << CYAN_COLOR;
+            cout << "\n\033[82G";
+            cout << "╔═══════════════╗   ╔═══════════════╗\n\033[82G";
+            cout << "║ " << backColorAgain << CYAN_COLOR << "    AGAIN    " << RESET_COLOR << CYAN_COLOR << " ║   ║ " << backColorSolution << CYAN_COLOR << "   SOLUTION  " << RESET_COLOR << CYAN_COLOR << " ║\n\033[82G";
+            cout << CYAN_COLOR;
+            cout << "╚═══════════════╝   ╚═══════════════╝\n";
+            cout << RESET_COLOR;
+
+        }
+
+        void printBestRecords(){
+            cout << "\n\033[82G    Top 5 the Best Records on ";
+            if(level == 1) cout << "easy:";
+            else if(level == 2) cout << "medium:";
+            else cout << "hard:";
+            cout << "\n\n\n";
+
+            for(int i = 0; i < 5 && i < bestRecords.size(); i++){
+                cout << "\033[88G" << "       #" << i + 1 << ": ";
+                printTopTime(bestRecords[i]);
+                cout << "\n\n";
+            }
+        }
+
+        void showTimer(){
+            cout << "\n\n\n\033[93G Timer: ";
+            printTopTime(time(NULL) - startTimeS);
+        }
+
+        int getLevel(){
+            return level;
+        }
+
+        void display(){
             system("clear");
+            // clear();
+            cout << "\n\n\n\033[8;60;210t";
+            // cout << setw(70) << left;
+
+            printLeftSide();
+            print(grid);
+            printRightSide();
+            printButtons();
+
+            showTimer();
+        
+            printBestRecords();
+        }
+
+        void displayWithAnswers(){
+            system("clear");
+            // clear();
             cout << "\n\n\n\033[8;60;200t";
             // cout << setw(70) << left;
 
             printLeftSide();
-            print(board);
+            print(gridOriginal);
             printRightSide();
+        }
+
+        void enterNumber(int key){
+            if(0 <= cRow && cRow < N && 0 <= cCol && cCol < N && btnSwitch == -1){
+                if(!grid[cRow][cCol].fixed){
+
+                    if(grid[cRow][cCol].val != key - '0' && key - '0' == gridOriginal[cRow][cCol].val) correctSum++;
+                    else if(grid[cRow][cCol].val != key - '0' && grid[cRow][cCol].val == gridOriginal[cRow][cCol].val) correctSum--;
+
+                    grid[cRow][cCol].val = key - '0';
+                }
+            }
+        }
+        
+        void delNumber(){
+            if(0 <= cRow && cRow < N && 0 <= cCol && cCol < N && btnSwitch == -1){
+                if(!grid[cRow][cCol].fixed){
+
+                    if(grid[cRow][cCol].val == gridOriginal[cRow][cCol].val) correctSum--;
+
+                    grid[cRow][cCol].val = 0;
+                }
+            }
+        }
+
+        void switchToButtons(int n){
+            btnSwitch = n / 5;
+        }
+
+        void switchToCells(){
+            btnSwitch = -1;
+        }
+
+        void startAgain(){
+            clearGame();
+            start(level, bestRecords);
+        }
+
+        void endGameShowingSolutions(){
+            *gameOver = true;
+            *gameWon = false;
+            displayWithAnswers();
+        }
+
+        void handleKey(int key){
+            switch (key)
+            {
+            case 'W' | 'w':
+                if(btnSwitch != -1) switchToCells();
+                else cRow = (cRow > 0) ? cRow - 1 : 0;
+
+                break;
+                
+            case 'S' | 's':
+                if(cRow < N - 1) cRow++;
+                else switchToButtons(cCol);
+
+                break;
+
+            case 'A' | 'a':
+                if(btnSwitch != -1) btnSwitch = 0;
+                else cCol = (cCol > 0) ? cCol - 1 : 0;
+
+                break;
+
+            case 'D' | 'd':
+                if(btnSwitch != -1) btnSwitch = 1;
+                else cCol = (cCol < N - 1) ? cCol + 1 : N - 1;
+
+                break;
+            case '\n':
+                if(btnSwitch == 0) startAgain();
+                else if(btnSwitch == 1) endGameShowingSolutions();
+
+            default:
+                break;
+            }
+
+            if('0' <= key && key <= '9') enterNumber(key);
+            else if(key == 127) delNumber();
+            
+        }
+
+        int getRem(int lvl){
+            if(lvl == 0) return 81 - 1; // devOption
+
+            if(lvl == 1) return 81 - 55;
+
+            if(lvl == 2) return 81 - 60;
+
+            return 81 - 65;
+        }
+
+        bool checkForWin(){
+            refresh();
+            return correctSum == N * N;
+        }
+
+        void start(int lvl, vector <int> records){
+            level = 0; // devOption
+            // level = lvl;
+            bestRecords = records;
+            startTimeS = time(NULL);
+            cRow = cCol = 4;
+            btnSwitch = -1;
+            correctSum = getRem(level);
+
+            cout << "\n\n\n\033[8;60;210t";
+            // system("clear");
+            // clear();
+
+            generateGrid(level);
+            display();
         }
     
     ~Sudoku(){
