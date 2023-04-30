@@ -210,13 +210,13 @@ class Sudoku {
                 removeK(1); // devOption
                 break;
             case 1:
-                removeK(55);
+                removeK(45);
                 break;
             case 2:
-                removeK(60);
+                removeK(50);
                 break;
             case 3:
-                removeK(65);
+                removeK(55);
                 break;
             default:
                 break;
@@ -418,6 +418,10 @@ class Sudoku {
             case '\n':
                 if(btnSwitch == 0) startAgain();
                 else if(btnSwitch == 1) endGameShowingSolutions();
+            case 'q' | 'Q':
+                endwin();
+                system("clear");
+                exit(0);
 
             default:
                 break;
@@ -431,11 +435,11 @@ class Sudoku {
         int getRem(int lvl){
             if(lvl == 0) return 81 - 1; // devOption
 
-            if(lvl == 1) return 81 - 55;
+            if(lvl == 1) return 81 - 45;
 
-            if(lvl == 2) return 81 - 60;
+            if(lvl == 2) return 81 - 50;
 
-            return 81 - 65;
+            return 81 - 55;
         }
 
         bool checkForWin(){
@@ -444,7 +448,7 @@ class Sudoku {
         }
 
         void start(int lvl, vector <int> records){
-            level = 0; // devOption
+            level = lvl; // devOption
             // level = lvl;
             bestRecords = records;
             startTimeS = time(NULL);
