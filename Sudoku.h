@@ -443,13 +443,14 @@ class Sudoku {
             return 81 - 55;
         }
 
-        bool checkForWin(){
+        pair<int, bool> checkForWin(){
             refresh();
-            return correctSum == N * N;
+            int Time = (time(NULL) - startTimeS);
+            return make_pair(Time, correctSum == N * N);
         }
 
         void start(int lvl, vector <int> records){
-            level = lvl; // devOption
+            level = 0; // devOption
             // level = lvl;
             bestRecords = records;
             startTimeS = time(NULL);

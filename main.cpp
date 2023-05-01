@@ -9,6 +9,9 @@
 #include <cstdlib>
 #include <time.h>
 #include <fstream>
+#include <unistd.h>
+#include <chrono>
+#include <thread>
 
 bool gameOver = false, gameWon = false;
 Sudoku game(gameOver, gameWon);
@@ -19,13 +22,52 @@ vector <int> records;
 
 void input(){
     keypad(stdscr, TRUE);
+    nodelay(stdscr, true); // make getch() non-blocking
+    timeout(1000);
 
     // time_t startT(NULL);
-    
-    // while(time(NULL) - startT < 1){
+    // while(true){
         int ch = getch();
+        
+        if(ch == ERR) return;
+        else game.handleKey(ch);
 
-        game.handleKey(ch);
+        // game.handleKey(ch);
+        // int ch;
+
+        // for (int i = 0; i < 10; i++) {
+        //     this_thread::sleep_for(std::chrono::milliseconds(100));
+        //     if ((ch = getch()) != ERR) {
+        //         game.handleKey(ch);
+        //         break;
+        //     }
+        // }
+
+        // int ch;
+
+        // for(int i = 0; i < 10; i++) { // wait for up to 10 seconds
+        //     if((ch = getch())) { // check if input is available
+        //         game.handleKey(ch);
+        //         return;
+        //     }
+        //     sleep(1); // wait for 1 second
+        // }
+
+        // int ch;
+
+        // if(ch = getch()){
+        //     game.handleKey(ch);
+        //     return;
+        // }
+
+        // sleep(1);
+
+        // double curSeconds = difftime(time(NULL), startT);
+        // if(curSeconds > 1) break;
+
+        // wait(getch());
+        // wait
+
     // }
 }
 
@@ -80,22 +122,24 @@ void playNext(){
 
     refresh();
 
-    time_t start_time = time(NULL);
+    // time_t start_time = time(NULL);
     int elapsed_time = 0;
 
     while(!gameOver){
         game.display();
         // game.displayWithAnswers();
         input();
-        napms(1);
+        // napms(1);
         // refresh();
 
-        if(game.checkForWin()) gameOver = true, gameWon = true;
+        pair <int, bool> ret = game.checkForWin();
+        if(ret.second) gameOver = true, gameWon = true;
+        elapsed_time = ret.first;
     }
 
     endwin();
 
-    elapsed_time = time(NULL) - start_time;
+    // elapsed_time = time(NULL) - start_time;
 
     if(!gameWon){
         game.displayWithAnswers();
@@ -106,10 +150,13 @@ void playNext(){
     else{
         system("clear");
         cout << "\n\n\n\t\t\t\t\tYOU WON!\t";
-        if(records.empty() || elapsed_time < records[0]) cout << "It is new record!!!\t";
+        if(records.empty() || elapsed_time < records[0]) cout << "It is new record ";
+
+        if(game.getLevel() == 1) cout << " on Easy!!!\t";
+        else if(game.getLevel() == 1) cout << " on Medium!!!\t";
+        else cout << " on Hard!!!\t";
 
         printTime(elapsed_time);
-
 
         ofstream outfile("records.txt", fstream::in | fstream::out | fstream::app);
         outfile << game.getLevel() << ' ' << elapsed_time << '\n';
