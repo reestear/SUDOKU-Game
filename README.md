@@ -16,6 +16,7 @@
         gcc main.cpp -o play -lncurses -lstdc++
     2. Execution:
         ./play
+
 -- If you have faced any problems message me! Telegram: @ruslahn | Instagram: @positiononthebottom
 
 #Game Controls:
