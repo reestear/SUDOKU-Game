@@ -450,8 +450,7 @@ class Sudoku {
         }
 
         void start(int lvl, vector <int> records){
-            level = 0; // devOption
-            // level = lvl;
+            level = lvl; // devOption
             bestRecords = records;
             startTimeS = time(NULL);
             cRow = cCol = 4;
@@ -459,8 +458,6 @@ class Sudoku {
             correctSum = getRem(level);
 
             cout << "\n\n\n\033[8;60;210t";
-            // system("clear");
-            // clear();
 
             generateGrid(level);
             display();
