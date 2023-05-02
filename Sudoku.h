@@ -299,9 +299,9 @@ class Sudoku {
 
         void printBestRecords(){
             cout << "\n\033[82G    Top 5 the Best Records on ";
-            if(level == 1) cout << "easy:";
-            else if(level == 2) cout << "medium:";
-            else cout << "hard:";
+            if(level == 1) cout << "Easy:";
+            else if(level == 2) cout << "Medium:";
+            else cout << "Hard:";
             cout << "\n\n\n";
 
             for(int i = 0; i < 5 && i < bestRecords.size(); i++){

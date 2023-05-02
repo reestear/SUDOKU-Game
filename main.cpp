@@ -20,12 +20,19 @@ using namespace std;
 
 vector <int> records;
 
+void clearCin()
+{
+    std::cin.clear();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+}
+
 void input(){
     keypad(stdscr, TRUE);
     nodelay(stdscr, true); // make getch() non-blocking
     timeout(1000);
 
     int ch = getch();
+    flushinp(); 
     
     if(ch == ERR) return;
     else game.handleKey(ch);
@@ -56,6 +63,7 @@ void playNext(){
 
     char res;
     std::cin >> res;
+    clearCin();
 
     initscr();
     clear();
@@ -118,9 +126,11 @@ void playNext(){
         outfile << game.getLevel() << ' ' << elapsed_time << '\n';
     }
 
-    cout << MAGENTA_COLOR << "Do you want to play again? YES?NO (y/n): ";
+    cout << MAGENTA_COLOR << "Do you want to play again? YES/NO (y/n): ";
+
 
     std::cin >> res;
+    clearCin();
     switch (res)
     {
     case 'y':
