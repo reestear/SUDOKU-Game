@@ -371,7 +371,7 @@ class Sudoku {
         }
 
         void switchToButtons(int n){
-            btnSwitch = n / 5;
+            if(btnSwitch == -1) btnSwitch = n / 5;
         }
 
         void switchToCells(){
